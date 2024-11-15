@@ -1,27 +1,42 @@
 package org.chatapp.message;
 
+import org.chatapp.messagememento.MessageMemento;
+
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 
 public class Message {
-    private final int messageId;
-    private final int senderId;
-    private final String senderName;
-    private final int receiverId;
-    private final String receiverName;
-    private final String messageContent;
-    private final LocalDateTime date;
-    private static int counter = 0;
+    private int messageId;
+    private int senderId;
+    private String senderName;
+    private int receiverId;
+    private String receiverName;
+    private String messageContent;
+    private LocalDateTime timestamp;
+//    private static int counter = 0;
 
-    public Message(Integer senderId, String senderName, Integer recipientId, String receiverName, String messageContent) {
-        this.messageId = counter++;
+    public Message(int messageId, int senderId, String senderName, int recipientId, String receiverName, String messageContent, LocalDateTime timestamp) {
+        this.messageId = messageId;
         this.senderId = senderId;
         this.senderName = senderName;
         this.receiverId = recipientId;
         this.receiverName = receiverName;
         this.messageContent = messageContent;
-        this.date = LocalDateTime.now();
+        this.timestamp = timestamp;
+    }
+
+    public MessageMemento save() {
+        return new MessageMemento(messageId, senderId, senderName, receiverId, receiverName, messageContent, timestamp);
+    }
+
+    // Restore message state from a memento
+    public void restore(MessageMemento memento) {
+        this.messageId = memento.getMessageId();
+        this.senderId = memento.getSenderId();
+        this.senderName = memento.getSenderName();
+        this.receiverId = memento.getReceiverId();
+        this.receiverName = memento.getReceiverName();
+        this.messageContent = memento.getMessageContent();
+        this.timestamp = memento.getTimestamp();
     }
 
     public Integer getSenderId() {
@@ -48,8 +63,8 @@ public class Message {
         return messageContent;
     }
 
-    public LocalDateTime getDate() {
-        return date;
+    public LocalDateTime getTimestamp() {
+        return timestamp;
     }
 
     @Override
@@ -61,6 +76,6 @@ public class Message {
                 ", recipientId=" + receiverId +
                 ", receiverName=" + receiverName +
                 ", messageContent=" + messageContent +
-                ", date=" + date + '}';
+                ", date=" + timestamp + '}';
     }
 }

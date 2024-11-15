@@ -3,6 +3,7 @@ package org.chatapp.chatserver;
 import org.chatapp.message.Message;
 import org.chatapp.user.User;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,6 +16,8 @@ public class ChatServer {
     private Map<Integer, User> registeredUsers = new HashMap<>();
     private Map<User, Set<User>> blockedUsers = new HashMap<>();
     private List<Message> messages = new ArrayList<>();
+    private Map<Integer, Set<User>> globalMessageIdToRecipientMap = new HashMap<>();
+    private int messageId = 1;
 
     public void registerUser(User user) {
         registeredUsers.put(user.getId(), user);
@@ -30,6 +33,7 @@ public class ChatServer {
 
     public void sendMessage(User sender, Set<User> recipients, String messageContent) {
         if (isUserRegistered(sender)) {
+            Set<User> recipientSet = new HashSet<>();
             for (User recipient : recipients) {
                 if (isUserRegistered(recipient)) {
                     if (!senderIsBlocked(sender, recipient)) {
@@ -37,11 +41,35 @@ public class ChatServer {
                         String senderName = sender.getName();
                         int receiverId = recipient.getId();
                         String receiverName = recipient.getName();
-                        Message message = new Message(senderId,  senderName, receiverId, receiverName, messageContent);
-                        sender.getHistory().addMessage(message);
-                        recipient.getHistory().addMessage(message);
+                        LocalDateTime timestamp = LocalDateTime.now();
+
+                        recipientSet.add(recipient);
+                        sender.sendMessage(messageId, senderId,senderName, receiverId, receiverName, messageContent, timestamp);
+                        recipient.receiveMessage(messageId, senderId,senderName, receiverId, receiverName, messageContent, timestamp);
+//
+//                        Message message = new Message(senderId,  senderName, receiverId, receiverName, messageContent);
+//
+//                        sender.addToHistory(messageId, senderId, senderName, receiverId, receiverName, messageContent, timestamp);
+//
+//                        sender.getHistory().addMessage(message);
+//                        recipient.getHistory().addMessage(message);
+
+//                        recipient.addToHistory(messageId, senderId, senderName, receiverId, receiverName, messageContent, timestamp);
+
                     }
                 }
+            }
+//            System.out.println(recipientList);
+            globalMessageIdToRecipientMap.put(messageId, recipientSet);
+            messageId++;
+        }
+    }
+
+    public void revokeMessage(int messageId) {
+        Set<User> recipients = globalMessageIdToRecipientMap.get(messageId);
+        if (recipients != null) {
+            for (User recipient : recipients) {
+                recipient.removeReceivedMessage(messageId);
             }
         }
     }

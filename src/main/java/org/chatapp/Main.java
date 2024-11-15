@@ -11,31 +11,38 @@ public class Main {
 
         // Create the server and users.
         ChatServer server = new ChatServer();
-        User userOne = new User("Sean", server);
-        User userTwo = new User("Katie", server);
-        User userThree = new User("Dottie", server);
-        server.registerUser(userOne);
-        server.registerUser(userTwo);
-        server.registerUser(userThree);
+        User sean = new User("Sean", server);
+        User katie = new User("Katie", server);
+        User kitty = new User("Dottie", server);
+
+        sean.register();
+        katie.register();
+        kitty.register();
 
         // Create the message details.
         Set<User> recipientList = new HashSet<>();
-        recipientList.add(userTwo);
-        recipientList.add(userThree);
+        recipientList.add(katie);
+        recipientList.add(kitty);
         String messageContent = "I love you!";
 
         // Send a message from userOne
-        userOne.sendMessage(messageContent, recipientList);
-        userTwo.receiveMessage();
-        userThree.receiveMessage();
+        sean.sendMessage(messageContent, recipientList);
+//        userTwo.receiveMessagesFromUser(userOne);
+//        userThree.receiveMessagesFromUser(userOne);
 
         String kittyMessage = "You're the best kitty!";
-        recipientList.remove(userTwo);
-        userOne.sendMessage(kittyMessage, recipientList);
-        userOne.undoLastMessage();
+        recipientList.remove(katie);
+        sean.sendMessage(kittyMessage, recipientList);
 
-        userTwo.receiveMessage();
-        userThree.receiveMessage();
+        String kittyDadMessage = "You're the best dad!";
+        recipientList.clear();
+        recipientList.add(sean);
+        kitty.sendMessage(kittyDadMessage, recipientList);
+
+//        userTwo.receiveMessagesFromUser(userOne);
+//        userThree.receiveMessagesFromUser(userOne);
+        sean.viewChatHistory(kitty);
+        kitty.viewChatHistory(sean);
 
     }
 }

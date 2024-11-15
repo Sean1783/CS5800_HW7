@@ -3,6 +3,7 @@ package org.chatapp.chatserver;
 import org.chatapp.message.Message;
 import org.chatapp.user.User;
 
+import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -11,49 +12,37 @@ import java.util.Set;
 
 public class ChatServer {
 
-    private Set<User> registeredUsers = new HashSet<>();
-    private HashMap<User, Set<User>> blockedUsers = new HashMap<>();
+    private Map<Integer, User> registeredUsers = new HashMap<>();
+    private Map<User, Set<User>> blockedUsers = new HashMap<>();
     private List<Message> messages = new ArrayList<>();
 
     public void registerUser(User user) {
-        registeredUsers.add(user);
+        registeredUsers.put(user.getId(), user);
     }
 
     public void unregisterUser(User user) {
-        if (registeredUsers.contains(user)) {
-            registeredUsers.remove(user);
+        if (registeredUsers.containsKey(user.getId())) {
+            registeredUsers.remove(user.getId());
         } else {
             System.out.println("User does not exist.");
         }
     }
 
     public void sendMessage(User sender, Set<User> recipients, String messageContent) {
-        Set<User> validatedListOfRecipients = new HashSet<>();
         if (isUserRegistered(sender)) {
-            // The sender is registered.
             for (User recipient : recipients) {
                 if (isUserRegistered(recipient)) {
-                    // Receiver is registered.
                     if (!senderIsBlocked(sender, recipient)) {
-                        // Sender is not blocked by receiver.
-                        validatedListOfRecipients.add(recipient);
+                        int senderId = sender.getId();
+                        String senderName = sender.getName();
+                        int receiverId = recipient.getId();
+                        String receiverName = recipient.getName();
+                        Message message = new Message(senderId,  senderName, receiverId, receiverName, messageContent);
+                        sender.getHistory().addMessage(message);
+                        recipient.getHistory().addMessage(message);
                     }
                 }
             }
-            Message messageToSend =  new Message(sender, validatedListOfRecipients, messageContent);
-            messages.add(messageToSend);
-        }
-    }
-
-    public void receiveMessage(User receiver) {
-        System.out.println(receiver.getName() + "'s last message:");
-        List<Message> receivedMessages = getAllReceivedMessages(receiver);
-        if (!receivedMessages.isEmpty()) {
-            Message lastMessage = messages.get(receivedMessages.size() - 1);
-            System.out.println("From : " + lastMessage.getSender());
-            System.out.println("To : " + receiver);
-            System.out.println("Message : " + lastMessage.getMessageContent());
-            System.out.println("Timestamp : " + lastMessage.getDate());
         }
     }
 
@@ -65,30 +54,30 @@ public class ChatServer {
             boolean removed = messages.remove(lastMessage);
             if (removed) {
                 System.out.println("Removed: " + lastMessage);
+                // Remove messages from relevant other user's history.
             } else {
                 System.out.println("Message not found in messages list for removal: " + lastMessage);
             }
         }
     }
 
-    private List<Message> getAllReceivedMessages(User receiver) {
-        List<Message> receivedMessages = new ArrayList<>();
-        for (Message message : messages) {
-            Set<User> recipients = message.getRecipients();
-            if (recipients.contains(receiver)) {
-                receivedMessages.add(message);
-            }
-        }
-        return receivedMessages;
-    }
+//    private List<Message> getAllReceivedMessages(User receiver) {
+//        List<Message> receivedMessages = new ArrayList<>();
+//        for (Message message : messages) {
+//            if (receiver.getId() == message.getReceiverId()) {
+//                receivedMessages.add(message);
+//            }
+//        }
+//        return receivedMessages;
+//    }
 
     private List<Message> getAllSentMessages(User sender) {
         List<Message> sentMessages = new ArrayList<>();
-        for (Message message : messages) {
-            if (message.getSender().equals(sender)) {
-                sentMessages.add(message);
-            }
-        }
+//        for (Message message : messages) {
+//            if (message.getSender().equals(sender)) {
+//                sentMessages.add(message);
+//            }
+//        }
         return sentMessages;
     }
 
@@ -97,7 +86,7 @@ public class ChatServer {
     }
 
     private boolean isUserRegistered(User user) {
-        if(!registeredUsers.contains(user)) {
+        if(!registeredUsers.containsKey(user.getId())) {
             System.out.println(user + " is not registered.");
             return false;
         }

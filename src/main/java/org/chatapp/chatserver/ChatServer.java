@@ -35,31 +35,19 @@ public class ChatServer {
         if (isUserRegistered(sender)) {
             Set<User> recipientSet = new HashSet<>();
             for (User recipient : recipients) {
-                if (isUserRegistered(recipient)) {
-                    if (!senderIsBlocked(sender, recipient)) {
-                        int senderId = sender.getId();
-                        String senderName = sender.getName();
-                        int receiverId = recipient.getId();
-                        String receiverName = recipient.getName();
-                        LocalDateTime timestamp = LocalDateTime.now();
-
-                        recipientSet.add(recipient);
-                        sender.sendMessage(messageId, senderId,senderName, receiverId, receiverName, messageContent, timestamp);
-                        recipient.receiveMessage(messageId, senderId,senderName, receiverId, receiverName, messageContent, timestamp);
-//
-//                        Message message = new Message(senderId,  senderName, receiverId, receiverName, messageContent);
-//
-//                        sender.addToHistory(messageId, senderId, senderName, receiverId, receiverName, messageContent, timestamp);
-//
-//                        sender.getHistory().addMessage(message);
-//                        recipient.getHistory().addMessage(message);
-
-//                        recipient.addToHistory(messageId, senderId, senderName, receiverId, receiverName, messageContent, timestamp);
-
-                    }
+                if (validateRecipient(sender, recipient)) {
+                    int senderId = sender.getId();
+                    String senderName = sender.getName();
+                    int receiverId = recipient.getId();
+                    String receiverName = recipient.getName();
+                    LocalDateTime timestamp = LocalDateTime.now();
+                    recipientSet.add(recipient);
+                    sender.sendMessage(messageId, senderId,senderName, receiverId, receiverName, messageContent, timestamp);
+                    recipient.receiveMessage(messageId, senderId,senderName, receiverId, receiverName, messageContent, timestamp);
+                    messages.add(new Message(messageId, senderId,senderName, receiverId, receiverName, messageContent, timestamp));
                 }
             }
-//            System.out.println(recipientList);
+
             globalMessageIdToRecipientMap.put(messageId, recipientSet);
             messageId++;
         }
@@ -75,38 +63,28 @@ public class ChatServer {
     }
 
     public void undoLastMessage(User sender) {
-        List<Message> sentMessages = getAllSentMessages(sender);
-        if (!sentMessages.isEmpty()) {
-            Message lastMessage = sentMessages.get(sentMessages.size() - 1);
-            System.out.println("Attempting to remove: " + lastMessage);
-            boolean removed = messages.remove(lastMessage);
-            if (removed) {
-                System.out.println("Removed: " + lastMessage);
-                // Remove messages from relevant other user's history.
-            } else {
-                System.out.println("Message not found in messages list for removal: " + lastMessage);
-            }
-        }
-    }
-
-//    private List<Message> getAllReceivedMessages(User receiver) {
-//        List<Message> receivedMessages = new ArrayList<>();
-//        for (Message message : messages) {
-//            if (receiver.getId() == message.getReceiverId()) {
-//                receivedMessages.add(message);
+//        List<Message> sentMessages = getAllSentMessages(sender);
+//        if (!sentMessages.isEmpty()) {
+//            Message lastMessage = sentMessages.get(sentMessages.size() - 1);
+//            System.out.println("Attempting to remove: " + lastMessage);
+//            boolean removed = messages.remove(lastMessage);
+//            if (removed) {
+//                System.out.println("Removed: " + lastMessage);
+//                // Remove messages from relevant other user's history.
+//            } else {
+//                System.out.println("Message not found in messages list for removal: " + lastMessage);
 //            }
 //        }
-//        return receivedMessages;
-//    }
+    }
+
 
     private List<Message> getAllSentMessages(User sender) {
         List<Message> sentMessages = new ArrayList<>();
-//        for (Message message : messages) {
-//            if (message.getSender().equals(sender)) {
-//                sentMessages.add(message);
-//            }
-//        }
         return sentMessages;
+    }
+
+    private boolean validateRecipient(User sender, User receiver) {
+        return isUserRegistered(receiver) && !senderIsBlocked(sender, receiver);
     }
 
     private boolean validateUsers(User sender,User receiver) {

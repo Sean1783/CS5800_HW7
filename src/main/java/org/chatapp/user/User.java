@@ -17,8 +17,7 @@ public class User {
     private static int counter = 0;
 
     public User(String name) {
-//        history = new ChatHistory(counter);
-        history = new ChatHistory(this);
+        history = new ChatHistory();
         this.id = counter++;
         this.name = name;
         blockedUsers = new ArrayList<User>();
@@ -37,19 +36,12 @@ public class User {
     }
 
     public void sendMessage(int messageId, int senderId, String senderName, int receiverId, String receiverName, String messageContent, LocalDateTime timestamp) {
-//        history.addMessage(messageId, senderId, senderName, receiverId, receiverName, messageContent, timestamp);
         history.addSentMessage(messageId, senderId, senderName, receiverId, receiverName, messageContent, timestamp);
     }
 
     public void receiveMessage(int messageId, int senderId, String senderName, int receiverId, String receiverName, String messageContent, LocalDateTime timestamp) {
-//        history.addMessage(messageId, senderId, senderName, receiverId, receiverName, messageContent, timestamp);
         history.addReceivedMessage(messageId, senderId, senderName, receiverId, receiverName, messageContent, timestamp);
     }
-
-
-//    public void addToHistory(int messageId, int senderId, String senderName, int receiverId, String receiverName, String messageContent, LocalDateTime timestamp) {
-//        history.addMessage(messageId, senderId, senderName, receiverId, receiverName, messageContent, timestamp);
-//    }
 
     public void viewChatHistory(User chatPartner) {
         List<String> chatHistory = history.getChatHistoryWithUser(chatPartner);
@@ -61,28 +53,9 @@ public class User {
         }
     }
 
-
-//    public void receiveMessagesFromUser(User userToReceiveFrom) {
-//        List<String> messageHistory = history.receiveMessagesFromUser(userToReceiveFrom);
-//        for (String message : messageHistory) {
-//            System.out.println(message);
-//        }
-//    }
-
-    public ChatHistory getHistory() {
-        return history;
-    }
-
     public void undoLastMessage(ChatServer server) {
-//        server.undoLastMessage(this);
-
         int poppedMessageId = history.undoLastMessage();
         server.revokeMessage(poppedMessageId);
-//        System.out.println(poppedMessageId);
-        // Notify chatServer here?
-        // Remove all messages with this ID?
-
-
     }
 
     public void removeReceivedMessage(int messageId) {
@@ -90,6 +63,7 @@ public class User {
         System.out.println("Message " + messageId + " revoked");
     }
 
+    // This needs to be figured out. How to get all the data from history to User to call attemptSendMessage.
     public void redoLastMessage() {
         history.redoLastMessage();
     }

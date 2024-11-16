@@ -28,10 +28,13 @@ public class Main {
         // Send a message from userOne
         sean.attemptMessageSend(messageContent, recipientList, server);
 
-        katie.viewChatHistory(sean);
+        messageContent = "You're the best kitty!";
+        recipientList.remove(katie);
+        sean.attemptMessageSend(messageContent, recipientList, server);
         kitty.viewChatHistory(sean);
         sean.undoLastMessage(server);
-        katie.viewChatHistory(sean);
         kitty.viewChatHistory(sean);
+
+
     }
 }

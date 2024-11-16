@@ -33,24 +33,54 @@ public class ChatServer {
 
     public void sendMessage(User sender, Set<User> recipients, String messageContent) {
         if (isUserRegistered(sender)) {
-            Set<User> recipientSet = new HashSet<>();
+
+            int senderId = sender.getId();
+            String senderName = sender.getName();
+            Message.Endpoint sendingParty = new Message.Endpoint(senderName, senderId);
+
+            Set<Message.Endpoint> recipientEndpointsForMessage = new HashSet<>();
+            Set<User> recipientUsersToSendTo = new HashSet<>();
+
+            LocalDateTime timestamp = LocalDateTime.now();
+
             for (User recipient : recipients) {
                 if (validateRecipient(sender, recipient)) {
-                    int senderId = sender.getId();
-                    String senderName = sender.getName();
                     int receiverId = recipient.getId();
                     String receiverName = recipient.getName();
-                    LocalDateTime timestamp = LocalDateTime.now();
-                    recipientSet.add(recipient);
-                    sender.sendMessage(messageId, senderId,senderName, receiverId, receiverName, messageContent, timestamp);
-                    recipient.receiveMessage(messageId, senderId,senderName, receiverId, receiverName, messageContent, timestamp);
-                    messages.add(new Message(messageId, senderId,senderName, receiverId, receiverName, messageContent, timestamp));
+                    Message.Endpoint receivingParty = new Message.Endpoint(receiverName, receiverId);
+
+//                    Message receiverMessage = new Message(messageId, sendingParty, receivingParty, messageContent, timestamp);
+                    recipientEndpointsForMessage.add(receivingParty);
+                    recipientUsersToSendTo.add(recipient);
+
+                    // sender.sendMessage(messageId, senderId,senderName, receiverId, receiverName, messageContent, timestamp);
+                    // recipient.receiveMessage(messageId, senderId,senderName, receiverId, receiverName, messageContent, timestamp);
+
+//                    sender.sendMessage(message);
+
+//                    recipient.receiveMessage(receiverMessage);
                 }
             }
-
-            globalMessageIdToRecipientMap.put(messageId, recipientSet);
+            Message senderMessage = new Message(messageId, sendingParty, recipientEndpointsForMessage, messageContent, timestamp);
+            sender.sendMessage(senderMessage);
+            for (User recipient : recipientUsersToSendTo) {
+                recipient.receiveMessage(senderMessage);
+            }
+            messages.add(senderMessage);
+            globalMessageIdToRecipientMap.put(messageId, recipientUsersToSendTo);
             messageId++;
         }
+    }
+
+    public void redo(User sender, Message message) {
+        Set<Message.Endpoint> recipientEndpoints = message.getRecipients();
+        Set<User> recipientUsersToSendTo = new HashSet<>();
+        for (Message.Endpoint recipient : recipientEndpoints) {
+            User recipientUser = registeredUsers.get(recipient.getId());
+            recipientUsersToSendTo.add(recipientUser);
+        }
+        String messageContent = message.getMessageContent();
+        sendMessage(sender, recipientUsersToSendTo, messageContent);
     }
 
     public void revokeMessage(int messageId) {

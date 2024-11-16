@@ -27,14 +27,16 @@ public class Main {
 
         // Send a message from userOne
         sean.attemptMessageSend(messageContent, recipientList, server);
-
-        messageContent = "You're the best kitty!";
-        recipientList.remove(katie);
-        sean.attemptMessageSend(messageContent, recipientList, server);
         kitty.viewChatHistory(sean);
+        katie.viewChatHistory(sean);
+        System.out.println("\n");
         sean.undoLastMessage(server);
         kitty.viewChatHistory(sean);
-
+        katie.viewChatHistory(sean);
+        System.out.println("\n");
+        sean.redoLastMessage(server);
+        kitty.viewChatHistory(sean);
+        katie.viewChatHistory(sean);
 
     }
 }

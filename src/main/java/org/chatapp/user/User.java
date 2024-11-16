@@ -2,8 +2,8 @@ package org.chatapp.user;
 
 import org.chatapp.chathistory.ChatHistory;
 import org.chatapp.chatserver.ChatServer;
+import org.chatapp.message.Message;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -35,19 +35,29 @@ public class User {
         server.sendMessage(this, recipients, messageContent);
     }
 
-    public void sendMessage(int messageId, int senderId, String senderName, int receiverId, String receiverName, String messageContent, LocalDateTime timestamp) {
-        history.addSentMessage(messageId, senderId, senderName, receiverId, receiverName, messageContent, timestamp);
+//    public void sendMessage(int messageId, int senderId, String senderName, int receiverId, String receiverName, String messageContent, LocalDateTime timestamp) {
+//        history.addSentMessage(messageId, senderId, senderName, receiverId, receiverName, messageContent, timestamp);
+//    }
+
+    public void sendMessage(Message message) {
+        history.addSentMessage(message);
     }
 
-    public void receiveMessage(int messageId, int senderId, String senderName, int receiverId, String receiverName, String messageContent, LocalDateTime timestamp) {
-        history.addReceivedMessage(messageId, senderId, senderName, receiverId, receiverName, messageContent, timestamp);
+//    public void receiveMessage(int messageId, int senderId, String senderName, int receiverId, String receiverName, String messageContent, LocalDateTime timestamp) {
+//        history.addReceivedMessage(messageId, senderId, senderName, receiverId, receiverName, messageContent, timestamp);
+//    }
+
+    public void receiveMessage(Message message) {
+        history.addReceivedMessage(message);
     }
 
     public void viewChatHistory(User chatPartner) {
         List<String> chatHistory = history.getChatHistoryWithUser(chatPartner);
         if (chatHistory.isEmpty()) {
             System.out.println("No chat history found.");
+            return;
         }
+        System.out.println(name + "'s chat history with " + chatPartner.getName() + ":");
         for (String s : chatHistory) {
             System.out.println(s);
         }
@@ -64,8 +74,9 @@ public class User {
     }
 
     // This needs to be figured out. How to get all the data from history to User to call attemptSendMessage.
-    public void redoLastMessage() {
-        history.redoLastMessage();
+    public void redoLastMessage(ChatServer server) {
+        Message lastMessage = history.redo();
+        server.redo(this, lastMessage);
     }
 
     public int getId() {

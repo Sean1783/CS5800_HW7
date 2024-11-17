@@ -15,7 +15,7 @@ public class ChatServer {
 
     private Map<Integer, User> registeredUsers = new HashMap<>();
     private Map<User, Set<User>> blockedUsers = new HashMap<>();
-    private List<Message> messages = new ArrayList<>();
+    private List<Message> globalMessageRecord = new ArrayList<>();
     private Map<Integer, Set<User>> globalMessageIdToRecipientMap = new HashMap<>();
     private int messageId = 1;
 
@@ -33,84 +33,53 @@ public class ChatServer {
 
     public void sendMessage(User sender, Set<User> recipients, String messageContent) {
         if (isUserRegistered(sender)) {
-
-            int senderId = sender.getId();
-            String senderName = sender.getName();
-            Message.Endpoint sendingParty = new Message.Endpoint(senderName, senderId);
-
-            Set<Message.Endpoint> recipientEndpointsForMessage = new HashSet<>();
+            Message.Endpoint sendingEndpoint = convertUserToEndpoint(sender);
+            Set<Message.Endpoint> recipientEndpoints = new HashSet<>();
             Set<User> recipientUsersToSendTo = new HashSet<>();
-
-            LocalDateTime timestamp = LocalDateTime.now();
-
             for (User recipient : recipients) {
                 if (validateRecipient(sender, recipient)) {
-                    int receiverId = recipient.getId();
-                    String receiverName = recipient.getName();
-                    Message.Endpoint receivingParty = new Message.Endpoint(receiverName, receiverId);
-
-//                    Message receiverMessage = new Message(messageId, sendingParty, receivingParty, messageContent, timestamp);
-                    recipientEndpointsForMessage.add(receivingParty);
+                    Message.Endpoint receivingParty = convertUserToEndpoint(recipient);
+                    recipientEndpoints.add(receivingParty);
                     recipientUsersToSendTo.add(recipient);
-
-                    // sender.sendMessage(messageId, senderId,senderName, receiverId, receiverName, messageContent, timestamp);
-                    // recipient.receiveMessage(messageId, senderId,senderName, receiverId, receiverName, messageContent, timestamp);
-
-//                    sender.sendMessage(message);
-
-//                    recipient.receiveMessage(receiverMessage);
                 }
             }
-            Message senderMessage = new Message(messageId, sendingParty, recipientEndpointsForMessage, messageContent, timestamp);
-            sender.sendMessage(senderMessage);
+            LocalDateTime timestamp = LocalDateTime.now();
+            Message message = new Message(messageId, sendingEndpoint, recipientEndpoints, messageContent, timestamp);
+            sender.addMessageToSentHistory(message);
             for (User recipient : recipientUsersToSendTo) {
-                recipient.receiveMessage(senderMessage);
+                recipient.addMessageToReceivedHistory(message);
             }
-            messages.add(senderMessage);
+            globalMessageRecord.add(message);
             globalMessageIdToRecipientMap.put(messageId, recipientUsersToSendTo);
             messageId++;
         }
     }
 
+    private Message.Endpoint convertUserToEndpoint(User user) {
+        String senderName = user.getName();
+        int userId = user.getId();
+        return new Message.Endpoint(senderName, userId);
+    }
+
     public void redo(User sender, Message message) {
-        Set<Message.Endpoint> recipientEndpoints = message.getRecipients();
-        Set<User> recipientUsersToSendTo = new HashSet<>();
-        for (Message.Endpoint recipient : recipientEndpoints) {
-            User recipientUser = registeredUsers.get(recipient.getId());
-            recipientUsersToSendTo.add(recipientUser);
-        }
+        int messageId = message.getMessageId();
+        Set<User> recipientUsersToSendTo = globalMessageIdToRecipientMap.get(messageId);
         String messageContent = message.getMessageContent();
         sendMessage(sender, recipientUsersToSendTo, messageContent);
     }
 
-    public void revokeMessage(int messageId) {
+    public void revokeMessage(Message message) {
+        if (message == null) {
+            System.out.println("Message is null");
+            return;
+        }
+        int messageId = message.getMessageId();
         Set<User> recipients = globalMessageIdToRecipientMap.get(messageId);
         if (recipients != null) {
             for (User recipient : recipients) {
-                recipient.removeReceivedMessage(messageId);
+                recipient.removeReceivedMessage(message);
             }
         }
-    }
-
-    public void undoLastMessage(User sender) {
-//        List<Message> sentMessages = getAllSentMessages(sender);
-//        if (!sentMessages.isEmpty()) {
-//            Message lastMessage = sentMessages.get(sentMessages.size() - 1);
-//            System.out.println("Attempting to remove: " + lastMessage);
-//            boolean removed = messages.remove(lastMessage);
-//            if (removed) {
-//                System.out.println("Removed: " + lastMessage);
-//                // Remove messages from relevant other user's history.
-//            } else {
-//                System.out.println("Message not found in messages list for removal: " + lastMessage);
-//            }
-//        }
-    }
-
-
-    private List<Message> getAllSentMessages(User sender) {
-        List<Message> sentMessages = new ArrayList<>();
-        return sentMessages;
     }
 
     private boolean validateRecipient(User sender, User receiver) {
@@ -118,7 +87,7 @@ public class ChatServer {
     }
 
     private boolean validateUsers(User sender,User receiver) {
-        return isUserRegistered(sender) && isUserRegistered(receiver) && !senderIsBlocked(sender, receiver);
+        return isUserRegistered(sender) && validateRecipient(sender, receiver);
     }
 
     private boolean isUserRegistered(User user) {
@@ -158,7 +127,7 @@ public class ChatServer {
     }
 
     public void dumpMessages() {
-        for (Message message : messages) {
+        for (Message message : globalMessageRecord) {
             System.out.println(message);
         }
     }

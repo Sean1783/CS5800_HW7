@@ -1,14 +1,17 @@
 package org.chatapp.message;
 
 import org.chatapp.messagememento.MessageMemento;
+import org.chatapp.user.User;
 
 import java.time.LocalDateTime;
 import java.util.Set;
 
 public class Message {
     private int messageId;
-    private Endpoint sender;
-    private Set<Endpoint> recipients;
+//    private Endpoint sender;
+//    private Set<Endpoint> recipients;
+    private User sender;
+    private Set<User> recipients;
     private String messageContent;
     private LocalDateTime timestamp;
 

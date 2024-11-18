@@ -16,8 +16,12 @@ public class ChatServer {
     private Map<Integer, User> registeredUsers = new HashMap<>();
     private Map<User, Set<User>> blockedUsers = new HashMap<>();
     private List<Message> globalMessageRecord = new ArrayList<>();
-    private Map<Integer, Set<User>> globalMessageIdToRecipientMap = new HashMap<>();
     private int messageId = 1;
+
+
+    public Map<Integer, User> getRegisteredUsers() {
+        return new HashMap<>(registeredUsers);
+    }
 
     public void registerUser(User user) {
         registeredUsers.put(user.getId(), user);
@@ -46,7 +50,6 @@ public class ChatServer {
                 recipient.addMessageToHistory(message);
             }
             globalMessageRecord.add(message);
-            globalMessageIdToRecipientMap.put(messageId, recipientUsersToSendTo);
             messageId++;
         }
     }
@@ -62,16 +65,15 @@ public class ChatServer {
             System.out.println("Message is null");
             return;
         }
+        User sender = message.getSender();
+        sender.retainLastSent(message);
+        sender.deleteMessageFromHistory(message);
         Set<User> recipients = message.getRecipients();
         if (recipients != null) {
             for (User recipient : recipients) {
-                recipient.removeReceivedMessage(message);
+                recipient.deleteMessageFromHistory(message);
             }
         }
-    }
-
-    private boolean validateRecipient(User sender, User receiver) {
-        return isUserRegistered(receiver) && !senderIsBlocked(sender, receiver);
     }
 
     private boolean validateUsers(User sender,User receiver) {
@@ -84,6 +86,10 @@ public class ChatServer {
             return false;
         }
         return true;
+    }
+
+    private boolean validateRecipient(User sender, User receiver) {
+        return isUserRegistered(receiver) && !senderIsBlocked(sender, receiver);
     }
 
     private boolean senderIsBlocked(User sender, User receiver) {

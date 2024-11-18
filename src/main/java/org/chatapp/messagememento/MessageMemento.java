@@ -41,4 +41,13 @@ public class MessageMemento {
     public LocalDateTime getTimestamp() {
         return timestamp;
     }
+
+    public String toString() {
+        return "Message{" +
+                "messageId=" + messageId +
+                ", sender=" + sender +
+                ", recipients=" + recipients +
+                ", messageContent=" + messageContent +
+                ", date=" + timestamp + '}';
+    }
 }

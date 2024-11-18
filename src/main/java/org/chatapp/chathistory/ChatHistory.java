@@ -20,22 +20,28 @@ public class ChatHistory implements IterableByUser {
         poppedMessage = null;
     }
 
+    public List<Message> getMessageHistory() {
+        return new ArrayList<>(messageHistory);
+    }
+
     public void addMessageToHistory (Message message) {
         messageHistory.add(message);
         undoMessageList.add(message.save());
+        if (poppedMessage != null) {
+            poppedMessage = null;
+        }
     }
 
-    public Message removeLastSent(User user) {
+    public void retainLastSent(Message message) {
+        MessageMemento messageMemento = message.save();
+        poppedMessage.restore(messageMemento);
+    }
 
-        Message message;
-        MessageMemento messageMemento;
-        if (!messageHistory.isEmpty()) {
+    public Message getLastSent(User user) {
+        if (!messageHistory.isEmpty() && !undoMessageList.isEmpty()) {
             for (int i = messageHistory.size() - 1; i >= 0; i--) {
-                message = messageHistory.get(i);
-                messageMemento = undoMessageList.get(i);
+                Message message = messageHistory.get(i);
                 if (message.getSender().equals(user)) {
-                    messageHistory.remove(message);
-                    undoMessageList.remove(messageMemento);
                     poppedMessage = message;
                     return message;
                 }
@@ -44,7 +50,7 @@ public class ChatHistory implements IterableByUser {
         return null;
     }
 
-    public boolean revokeMessage (Message message) {
+    public boolean removeMessageFromHistory(Message message) {
         return messageHistory.remove(message);
     }
 

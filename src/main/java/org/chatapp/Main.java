@@ -29,7 +29,7 @@ public class Main {
 
         // Users can send messages to one or more other users through the chat server.
         // sean --> kitty, katie
-        sean.send(messageContent, recipientList, server);
+        sean.sendMessage(messageContent, recipientList, server);
         System.out.println("Kitty's chat history with Sean.");
         // Users can receive messages from other users and view the chat history for a specific user.
         Iterator<Message> kittyIterator = kitty.iterator(sean);
@@ -51,7 +51,7 @@ public class Main {
         recipientList.add(sean);
         messageContent = "What's for dinner?";
         // katie --> sean
-        katie.send(messageContent, recipientList, server);
+        katie.sendMessage(messageContent, recipientList, server);
 
         System.out.println("Sean's chat history with Katie after receiving her message.");
         Iterator<Message> seanIterator = sean.iterator(katie);
@@ -65,7 +65,7 @@ public class Main {
         recipientList.clear();
         recipientList.add(katie);
         // sean --> katie
-        sean.send(messageContent, recipientList, server);
+        sean.sendMessage(messageContent, recipientList, server);
         System.out.println("Sean's chat history with Katie following his response.");
         seanIterator = sean.iterator(katie);
         while (seanIterator.hasNext()) {
@@ -78,6 +78,15 @@ public class Main {
         // sean <--undo--> katie
         sean.undoLastMessage(server);
         System.out.println("Katie's chat history with Sean after he undid his last response.");
+        katieIterator = katie.iterator(sean);
+        while (katieIterator.hasNext()) {
+            Message message = katieIterator.next();
+            System.out.println(message);
+        }
+        System.out.println("\n");
+
+        sean.redoLastMessage(server);
+        System.out.println("Katie's chat history with Sean after he redid his last response.");
         katieIterator = katie.iterator(sean);
         while (katieIterator.hasNext()) {
             Message message = katieIterator.next();
@@ -100,7 +109,7 @@ public class Main {
         messageContent = "How about pizza?";
         recipientList.clear();
         recipientList.add(katie);
-        sean.send(messageContent, recipientList, server);
+        sean.sendMessage(messageContent, recipientList, server);
 
         System.out.println("Katie's chat history with Sean after blocking him. His last message to her was blocked.");
         katieIterator = katie.iterator(sean);
@@ -115,7 +124,7 @@ public class Main {
         recipientList.add(katie);
         recipientList.add(kitty);
         // sean --> (x)katie, kitty
-        sean.send(messageContent, recipientList, server);
+        sean.sendMessage(messageContent, recipientList, server);
 
         System.out.println("Kitty's unaffected chat history with Sean after he undid his last sent message.");
         kittyIterator = kitty.iterator(sean);
@@ -130,7 +139,7 @@ public class Main {
         recipientList.add(sean);
         messageContent = "With anchovies please.";
         // kitty --> katie, sean
-        kitty.send(messageContent, recipientList, server);
+        kitty.sendMessage(messageContent, recipientList, server);
 
         System.out.println("Katie's chat history with Kitty.");
         katieIterator = katie.iterator(kitty);

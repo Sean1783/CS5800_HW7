@@ -12,29 +12,41 @@ public class ChatHistory implements IterableByUser {
 
     private List<Message> messageHistory;
     private List<MessageMemento> undoMessageList;
-    private Message poppedMessage;
+    private Message lastRecalledMessage;
 
     public ChatHistory() {
         messageHistory = new ArrayList<>();
         undoMessageList = new ArrayList<>();
-        poppedMessage = null;
+        lastRecalledMessage = null;
     }
 
     public List<Message> getMessageHistory() {
         return new ArrayList<>(messageHistory);
     }
 
+    public List<MessageMemento> getUndoMessageList() {
+        return new ArrayList<>(undoMessageList);
+    }
+
+    public Message getLastRecalledMessage() {
+        if (lastRecalledMessage != null) {
+            return lastRecalledMessage;
+        }
+        return null;
+    }
+
     public void addMessageToHistory (Message message) {
         messageHistory.add(message);
         undoMessageList.add(message.save());
-        if (poppedMessage != null) {
-            poppedMessage = null;
+        if (lastRecalledMessage != null) {
+            lastRecalledMessage = null;
         }
     }
 
     public void retainLastSent(Message message) {
         MessageMemento messageMemento = message.save();
-        poppedMessage.restore(messageMemento);
+        lastRecalledMessage = new Message();
+        lastRecalledMessage.restore(messageMemento);
     }
 
     public Message getLastSent(User user) {
@@ -42,7 +54,7 @@ public class ChatHistory implements IterableByUser {
             for (int i = messageHistory.size() - 1; i >= 0; i--) {
                 Message message = messageHistory.get(i);
                 if (message.getSender().equals(user)) {
-                    poppedMessage = message;
+                    lastRecalledMessage = message;
                     return message;
                 }
             }
@@ -52,13 +64,6 @@ public class ChatHistory implements IterableByUser {
 
     public boolean removeMessageFromHistory(Message message) {
         return messageHistory.remove(message);
-    }
-
-    public Message getPoppedMessage() {
-        if (poppedMessage != null) {
-            return poppedMessage;
-        }
-        return null;
     }
 
     @Override

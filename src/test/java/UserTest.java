@@ -1,4 +1,3 @@
-import org.chatapp.chathistory.ChatHistory;
 import org.chatapp.chatserver.ChatServer;
 import org.chatapp.message.Message;
 import org.chatapp.user.User;
@@ -6,15 +5,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 public class UserTest {
 
@@ -32,15 +25,17 @@ public class UserTest {
         recipients.add(userTwo);
         String testContent = "Test content.";
         LocalDateTime timestamp = LocalDateTime.now();
-        message = new Message(0, userOne, recipients, testContent, timestamp);
+        message = new Message(userOne, recipients, testContent, timestamp);
     }
 
     @Test
     public void testRegister() {
         int userId = userOne.getId();
         userOne.register(chatServer);
-        Map<Integer, User> users = chatServer.getRegisteredUsers();
-        assertTrue(users.containsKey(userId));
+//        Map<Integer, User> users = chatServer.getRegisteredUsers();
+        List<User> users = chatServer.getRegisteredUsers();
+//        assertTrue(users.containsKey(userId));
+        assertTrue(users.contains(userOne));
     }
 
     @Test
@@ -48,8 +43,10 @@ public class UserTest {
         userOne.register(chatServer);
         userTwo.register(chatServer);
         userOne.unregister(chatServer);
-        assertFalse(chatServer.getRegisteredUsers().containsKey(userOne.getId()));
-        assertTrue(chatServer.getRegisteredUsers().containsKey(userTwo.getId()));
+//        assertFalse(chatServer.getRegisteredUsers().containsKey(userOne.getId()));
+//        assertTrue(chatServer.getRegisteredUsers().containsKey(userTwo.getId()));
+        assertFalse(chatServer.getRegisteredUsers().contains(userOne));
+        assertTrue(chatServer.getRegisteredUsers().contains(userTwo));
     }
 
     @Test
@@ -68,14 +65,14 @@ public class UserTest {
     }
 
     @Test
-    public void addMessageToHistoryTest() {
+    public void testAddMessageToHistory() {
         userOne.addMessageToHistory(message);
         List<Message> userOneChatHistory = userOne.getChatHistory();
         assertEquals(userOneChatHistory.get(0), message);
     }
 
     @Test
-    public void deleteMessageFromHistoryTest() {
+    public void testDeleteMessageFromHistoryTest() {
         userOne.addMessageToHistory(message);
         userOne.deleteMessageFromHistory(message);
         List<Message> userOneChatHistory = userOne.getChatHistory();
@@ -83,8 +80,7 @@ public class UserTest {
     }
 
     @Test
-    public void undoLastMessage() {
-
+    public void testUndoLastMessage() {
         userOne.register(chatServer);
         userTwo.register(chatServer);
         userOne.addMessageToHistory(message);
@@ -94,6 +90,72 @@ public class UserTest {
         List<Message> userTwoChatHistory = userTwo.getChatHistory();
         assertTrue(userOneChatHistory.isEmpty());
         assertTrue(userTwoChatHistory.isEmpty());
+    }
+
+    @Test
+    public void testRetainLastSent() {
+        userOne.addMessageToHistory(message);
+        userOne.retainLastSent(message);
+        Message lastSentMessage = userOne.getLastRecalledMessage();
+        assertEquals(lastSentMessage.getMessageContent(), message.getMessageContent());
+    }
+
+    @Test
+    public void testRedoLastMessage() {
+        userOne.register(chatServer);
+        userTwo.register(chatServer);
+        userOne.addMessageToHistory(message);
+        userTwo.addMessageToHistory(message);
+        userOne.undoLastMessage(chatServer);
+        userOne.redoLastMessage(chatServer);
+        List<Message> userTwoChatHistory = userTwo.getChatHistory();
+        assertFalse(userTwoChatHistory.isEmpty());
+    }
+
+    @Test
+    public void testBlockUser() {
+        userOne.register(chatServer);
+        userTwo.register(chatServer);
+        userTwo.blockUser(userOne, chatServer);
+        Set<User> recipients = new HashSet<>();
+        recipients.add(userTwo);
+        String messageContent = "Blocked message content";
+        userOne.sendMessage(messageContent, recipients, chatServer);
+        List<Message> userTwoChatHistory = userTwo.getChatHistory();
+        assertTrue(userTwoChatHistory.isEmpty());
+        Map<User, Set<User>> blockedUsers = chatServer.getBlockedUsers();
+        Set<User> blockedUser = blockedUsers.get(userTwo);
+        assertTrue(blockedUser.contains(userOne));
+    }
+
+    @Test
+    public void testUnblockUser() {
+        userOne.register(chatServer);
+        userTwo.register(chatServer);
+        userTwo.blockUser(userOne, chatServer);
+        Set<User> recipients = new HashSet<>();
+        recipients.add(userTwo);
+        String messageContent = "Blocked message content";
+        userOne.sendMessage(messageContent, recipients, chatServer);
+        userTwo.unblockUser(userOne, chatServer);
+        userOne.sendMessage(messageContent, recipients, chatServer);
+        List<Message> userTwoChatHistory = userTwo.getChatHistory();
+        assertEquals(1, userTwoChatHistory.size());
+        Map<User, Set<User>> blockedUsers = chatServer.getBlockedUsers();
+        Set<User> blockedUser = blockedUsers.get(userTwo);
+        assertFalse(blockedUser.contains(userOne));
+    }
+
+    @Test
+    public void testIterator() {
+        userOne.register(chatServer);
+        userTwo.register(chatServer);
+        userOne.addMessageToHistory(message);
+        userTwo.addMessageToHistory(message);
+        Iterator<Message> messageIterator = userOne.iterator(userTwo);
+        assertTrue(messageIterator.hasNext());
+        Message iteratorMessage = messageIterator.next();
+        assertEquals(iteratorMessage, message);
     }
 
 

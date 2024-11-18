@@ -30,6 +30,14 @@ public class User implements IterableByUser {
         return name;
     }
 
+    public List<Message> getChatHistory() {
+        return chatHistory.getMessageHistory();
+    }
+
+    public Message getLastRecalledMessage () {
+        return chatHistory.getLastRecalledMessage();
+    }
+
     public void register(ChatServer server) {
         server.registerUser(this);
     }
@@ -65,7 +73,7 @@ public class User implements IterableByUser {
     }
 
     public void redoLastMessage(ChatServer server) {
-        Message lastMessage = chatHistory.getPoppedMessage();
+        Message lastMessage = chatHistory.getLastRecalledMessage();
         server.redo(this, lastMessage);
     }
 
@@ -80,10 +88,6 @@ public class User implements IterableByUser {
     @Override
     public Iterator<Message> iterator(User userToSearchWith) {
         return chatHistory.iterator(userToSearchWith);
-    }
-
-    public List<Message> getChatHistory() {
-        return chatHistory.getMessageHistory();
     }
 
     @Override

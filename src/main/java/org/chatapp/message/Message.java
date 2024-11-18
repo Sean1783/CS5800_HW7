@@ -7,14 +7,14 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 public class Message {
-    private int messageId;
     private User sender;
     private Set<User> recipients;
     private String messageContent;
     private LocalDateTime timestamp;
 
-    public Message(int messageId, User sender, Set<User> receivers, String messageContent, LocalDateTime timestamp) {
-        this.messageId = messageId;
+    public Message() {}
+
+    public Message(User sender, Set<User> receivers, String messageContent, LocalDateTime timestamp) {
         this.sender = sender;
         this.recipients = receivers;
         this.messageContent = messageContent;
@@ -34,15 +34,10 @@ public class Message {
     }
 
     public void restore(MessageMemento memento) {
-        this.messageId = memento.getMessageId();
         this.sender = memento.getSender();
         this.recipients = memento.getRecipients();
         this.messageContent = memento.getMessageContent();
         this.timestamp = memento.getTimestamp();
-    }
-
-    public Integer getMessageId() {
-        return messageId;
     }
 
     public String getMessageContent() {
@@ -56,10 +51,9 @@ public class Message {
     @Override
     public String toString() {
         return "Message{" +
-                "messageId=" + messageId +
                 ", sender=" + sender +
                 ", recipients=" + recipients +
-                ", messageContent=" + messageContent +
+                ", messageContent=\"" + messageContent + "\"" +
                 ", date=" + timestamp + '}';
     }
 }

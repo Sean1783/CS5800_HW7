@@ -13,26 +13,39 @@ import java.util.Set;
 
 public class ChatServer {
 
-    private Map<Integer, User> registeredUsers = new HashMap<>();
+//    private Map<Integer, User> registeredUsers = new HashMap<>();
+    private List<User> registeredUsers = new ArrayList<>();
     private Map<User, Set<User>> blockedUsers = new HashMap<>();
     private List<Message> globalMessageRecord = new ArrayList<>();
-    private int messageId = 1;
 
+    public List<Message> getGlobalMessageRecord() {
+        return new ArrayList<>(globalMessageRecord);
+    }
 
-    public Map<Integer, User> getRegisteredUsers() {
-        return new HashMap<>(registeredUsers);
+    public Map<User, Set<User>> getBlockedUsers() {
+        return new HashMap<>(blockedUsers);
+    }
+
+    public List<User> getRegisteredUsers() {
+//    public Map<Integer, User> getRegisteredUsers() {
+//        return new HashMap<>(registeredUsers);
+        return new ArrayList<>(registeredUsers);
     }
 
     public void registerUser(User user) {
-        registeredUsers.put(user.getId(), user);
+//        registeredUsers.put(user.getId(), user);
+        registeredUsers.add(user);
     }
 
     public void unregisterUser(User user) {
-        if (registeredUsers.containsKey(user.getId())) {
-            registeredUsers.remove(user.getId());
-        } else {
+        if (!registeredUsers.remove(user)) {
             System.out.println("User does not exist.");
         }
+//        if (registeredUsers.containsKey(user.getId())) {
+//            registeredUsers.remove(user.getId());
+//        } else {
+//            System.out.println("User does not exist.");
+//        }
     }
 
     public void sendMessage(User sender, Set<User> recipients, String messageContent) {
@@ -44,13 +57,12 @@ public class ChatServer {
                 }
             }
             LocalDateTime timestamp = LocalDateTime.now();
-            Message message = new Message(messageId, sender, recipientUsersToSendTo, messageContent, timestamp);
+            Message message = new Message(sender, recipientUsersToSendTo, messageContent, timestamp);
             sender.addMessageToHistory(message);
             for (User recipient : recipientUsersToSendTo) {
                 recipient.addMessageToHistory(message);
             }
             globalMessageRecord.add(message);
-            messageId++;
         }
     }
 
@@ -76,28 +88,33 @@ public class ChatServer {
         }
     }
 
-    private boolean validateUsers(User sender,User receiver) {
+    public boolean validateUsers(User sender,User receiver) {
         return isUserRegistered(sender) && validateRecipient(sender, receiver);
     }
 
-    private boolean isUserRegistered(User user) {
-        if(!registeredUsers.containsKey(user.getId())) {
-            System.out.println(user + " is not registered.");
-            return false;
+    public boolean isUserRegistered(User user) {
+        if (registeredUsers.contains(user)) {
+            return true;
         }
-        return true;
+        System.out.println(user + " is not registered.");
+        return false;
+//        if(!registeredUsers.containsKey(user.getId())) {
+//            System.out.println(user + " is not registered.");
+//            return false;
+//        }
+//        return true;
     }
 
-    private boolean validateRecipient(User sender, User receiver) {
-        return isUserRegistered(receiver) && !senderIsBlocked(sender, receiver);
-    }
-
-    private boolean senderIsBlocked(User sender, User receiver) {
+    public boolean senderIsBlocked(User sender, User receiver) {
         Set<User> blockedSenders = blockedUsers.get(receiver);
         if (blockedSenders != null) {
             return blockedSenders.contains(sender);
         }
         return false;
+    }
+
+    public boolean validateRecipient(User sender, User receiver) {
+        return isUserRegistered(receiver) && !senderIsBlocked(sender, receiver);
     }
 
     public void blockUsers(User blocker, User blocked) {

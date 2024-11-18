@@ -3,5 +3,10 @@ import org.junit.platform.suite.api.Suite;
 
 @Suite
 @SelectClasses({
-        UserTest.class})
-public class CompleteChatAppTest {}
+        UserTest.class,
+        MessageTest.class,
+        MessageMementoTest.class,
+        ChatServerTest.class,
+        ChatHistoryTest.class,
+        SearchMessagesByUserTest.class
+}) public class CompleteChatAppTest {}

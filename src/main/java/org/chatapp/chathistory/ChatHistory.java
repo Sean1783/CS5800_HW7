@@ -10,42 +10,42 @@ import java.util.Iterator;
 
 public class ChatHistory implements IterableByUser {
 
-    private List<Message> sentMessages;
+    private List<Message> messageHistory;
     private List<MessageMemento> undoMessageList;
-    private List<Message> receivedMessages;
     private Message poppedMessage;
 
     public ChatHistory() {
-        sentMessages = new ArrayList<>();
+        messageHistory = new ArrayList<>();
         undoMessageList = new ArrayList<>();
-        receivedMessages = new ArrayList<>();
         poppedMessage = null;
     }
 
-    public void addSentMessage(Message message) {
-        sentMessages.add(message);
+    public void addMessageToHistory (Message message) {
+        messageHistory.add(message);
         undoMessageList.add(message.save());
-        if (poppedMessage != null) {
-            poppedMessage = null;
-        }
     }
 
-    public void addReceivedMessage(Message message) {
-        receivedMessages.add(message);
-    }
+    public Message removeLastSent(User user) {
 
-    public boolean revokeMessage(Message message) {
-        return receivedMessages.remove(message);
-    }
-
-    public Message undoLastMessage() {
-        if (!sentMessages.isEmpty() && !undoMessageList.isEmpty()) {
-            poppedMessage = sentMessages.remove(sentMessages.size() - 1);
-            MessageMemento lastMemento = undoMessageList.remove(undoMessageList.size() - 1);
-            poppedMessage.restore(lastMemento);
-            return poppedMessage;
+        Message message;
+        MessageMemento messageMemento;
+        if (!messageHistory.isEmpty()) {
+            for (int i = messageHistory.size() - 1; i >= 0; i--) {
+                message = messageHistory.get(i);
+                messageMemento = undoMessageList.get(i);
+                if (message.getSender().equals(user)) {
+                    messageHistory.remove(message);
+                    undoMessageList.remove(messageMemento);
+                    poppedMessage = message;
+                    return message;
+                }
+            }
         }
         return null;
+    }
+
+    public boolean revokeMessage (Message message) {
+        return messageHistory.remove(message);
     }
 
     public Message getPoppedMessage() {
@@ -57,9 +57,7 @@ public class ChatHistory implements IterableByUser {
 
     @Override
     public Iterator<Message> iterator(User userToSearchWith) {
-        List<Message> sent = new ArrayList<>(sentMessages);
-        List<Message> received = new ArrayList<>(receivedMessages);
-        return new SearchMessagesByUser(sent, received, userToSearchWith);
+        return new SearchMessagesByUser(messageHistory, userToSearchWith);
     }
 
 }

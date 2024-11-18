@@ -41,16 +41,12 @@ public class User implements IterableByUser {
         server.unregisterUser(this);
     }
 
-    public void sendMessage(String messageContent, Set<User> recipients, ChatServer server) {
+    public void addMessageToHistory(Message message) {
+        chatHistory.addMessageToHistory(message);
+    }
+
+    public void send(String messageContent, Set<User> recipients, ChatServer server) {
         server.sendMessage(this, recipients, messageContent);
-    }
-
-    public void addMessageToSentHistory(Message message) {
-        chatHistory.addSentMessage(message);
-    }
-
-    public void addMessageToReceivedHistory(Message message) {
-        chatHistory.addReceivedMessage(message);
     }
 
     public void removeReceivedMessage(Message message) {
@@ -63,7 +59,8 @@ public class User implements IterableByUser {
     }
 
     public void undoLastMessage(ChatServer server) {
-        server.revokeMessage(chatHistory.undoLastMessage());
+        Message lastSent = chatHistory.removeLastSent(this);
+        server.revokeMessage(lastSent);
     }
 
     public void redoLastMessage(ChatServer server) {

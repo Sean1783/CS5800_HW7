@@ -1,6 +1,7 @@
 package org.chatapp.messagememento;
 
 import org.chatapp.message.Message;
+import org.chatapp.user.User;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -8,8 +9,8 @@ import java.util.Set;
 public class MessageMemento {
 
     private final int messageId;
-    private final Message.Endpoint sender;
-    private final Set<Message.Endpoint> recipients;
+    private final User sender;
+    private final Set<User> recipients;
     private final String messageContent;
     private final LocalDateTime timestamp;
 
@@ -25,11 +26,11 @@ public class MessageMemento {
         return messageId;
     }
 
-    public Message.Endpoint getSender() {
+    public User getSender() {
         return sender;
     }
 
-    public Set<Message.Endpoint> getRecipients() {
+    public Set<User> getRecipients() {
         return recipients;
     }
 

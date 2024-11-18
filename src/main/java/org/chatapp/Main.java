@@ -28,7 +28,8 @@ public class Main {
         // Your program should include a driver that demonstrates these features with 3 users.
 
         // Users can send messages to one or more other users through the chat server.
-        sean.sendMessage(messageContent, recipientList, server);
+        // sean --> kitty, katie
+        sean.send(messageContent, recipientList, server);
         System.out.println("Kitty's chat history with Sean.");
         // Users can receive messages from other users and view the chat history for a specific user.
         Iterator<Message> kittyIterator = kitty.iterator(sean);
@@ -49,7 +50,8 @@ public class Main {
         recipientList.clear();
         recipientList.add(sean);
         messageContent = "What's for dinner?";
-        katie.sendMessage(messageContent, recipientList, server);
+        // katie --> sean
+        katie.send(messageContent, recipientList, server);
 
         System.out.println("Sean's chat history with Katie after receiving her message.");
         Iterator<Message> seanIterator = sean.iterator(katie);
@@ -62,7 +64,8 @@ public class Main {
         messageContent = "Whatever you're making.";
         recipientList.clear();
         recipientList.add(katie);
-        sean.sendMessage(messageContent, recipientList, server);
+        // sean --> katie
+        sean.send(messageContent, recipientList, server);
         System.out.println("Sean's chat history with Katie following his response.");
         seanIterator = sean.iterator(katie);
         while (seanIterator.hasNext()) {
@@ -72,6 +75,7 @@ public class Main {
         System.out.println("\n");
 
         // Users can undo the last message they sent using the Memento design pattern.
+        // sean <--undo--> katie
         sean.undoLastMessage(server);
         System.out.println("Katie's chat history with Sean after he undid his last response.");
         katieIterator = katie.iterator(sean);
@@ -91,11 +95,12 @@ public class Main {
 
         // Users can block messages from specific users using the Mediator design pattern.
         System.out.println("Katie blocks Sean.");
+        // sean ---X katie
         katie.blockUser(sean, server);
         messageContent = "How about pizza?";
         recipientList.clear();
         recipientList.add(katie);
-        sean.sendMessage(messageContent, recipientList, server);
+        sean.send(messageContent, recipientList, server);
 
         System.out.println("Katie's chat history with Sean after blocking him. His last message to her was blocked.");
         katieIterator = katie.iterator(sean);
@@ -104,5 +109,44 @@ public class Main {
             System.out.println(message);
         }
         System.out.println("\n");
+
+        messageContent = "Does anybody want pizza?";
+        recipientList.clear();
+        recipientList.add(katie);
+        recipientList.add(kitty);
+        // sean --> (x)katie, kitty
+        sean.send(messageContent, recipientList, server);
+
+        System.out.println("Kitty's unaffected chat history with Sean after he undid his last sent message.");
+        kittyIterator = kitty.iterator(sean);
+        while (kittyIterator.hasNext()) {
+            Message message = kittyIterator.next();
+            System.out.println(message);
+        }
+        System.out.println("\n");
+
+        recipientList.clear();
+        recipientList.add(katie);
+        recipientList.add(sean);
+        messageContent = "With anchovies please.";
+        // kitty --> katie, sean
+        kitty.send(messageContent, recipientList, server);
+
+        System.out.println("Katie's chat history with Kitty.");
+        katieIterator = katie.iterator(kitty);
+        while (katieIterator.hasNext()) {
+            Message message = katieIterator.next();
+            System.out.println(message);
+        }
+        System.out.println("\n");
+
+        System.out.println("Sean's chat history with Kitty.");
+        seanIterator = sean.iterator(kitty);
+        while (seanIterator.hasNext()) {
+            Message message = seanIterator.next();
+            System.out.println(message);
+        }
+        System.out.println("\n");
+
     }
 }

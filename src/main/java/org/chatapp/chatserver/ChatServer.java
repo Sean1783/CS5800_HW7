@@ -33,21 +33,17 @@ public class ChatServer {
 
     public void sendMessage(User sender, Set<User> recipients, String messageContent) {
         if (isUserRegistered(sender)) {
-            Message.Endpoint sendingEndpoint = convertUserToEndpoint(sender);
-            Set<Message.Endpoint> recipientEndpoints = new HashSet<>();
             Set<User> recipientUsersToSendTo = new HashSet<>();
             for (User recipient : recipients) {
                 if (validateRecipient(sender, recipient)) {
-                    Message.Endpoint receivingParty = convertUserToEndpoint(recipient);
-                    recipientEndpoints.add(receivingParty);
                     recipientUsersToSendTo.add(recipient);
                 }
             }
             LocalDateTime timestamp = LocalDateTime.now();
-            Message message = new Message(messageId, sendingEndpoint, recipientEndpoints, messageContent, timestamp);
-            sender.addMessageToSentHistory(message);
+            Message message = new Message(messageId, sender, recipientUsersToSendTo, messageContent, timestamp);
+            sender.addMessageToHistory(message);
             for (User recipient : recipientUsersToSendTo) {
-                recipient.addMessageToReceivedHistory(message);
+                recipient.addMessageToHistory(message);
             }
             globalMessageRecord.add(message);
             globalMessageIdToRecipientMap.put(messageId, recipientUsersToSendTo);
@@ -55,15 +51,8 @@ public class ChatServer {
         }
     }
 
-    private Message.Endpoint convertUserToEndpoint(User user) {
-        String senderName = user.getName();
-        int userId = user.getId();
-        return new Message.Endpoint(senderName, userId);
-    }
-
     public void redo(User sender, Message message) {
-        int messageId = message.getMessageId();
-        Set<User> recipientUsersToSendTo = globalMessageIdToRecipientMap.get(messageId);
+        Set<User> recipientUsersToSendTo = message.getRecipients();
         String messageContent = message.getMessageContent();
         sendMessage(sender, recipientUsersToSendTo, messageContent);
     }
@@ -73,8 +62,7 @@ public class ChatServer {
             System.out.println("Message is null");
             return;
         }
-        int messageId = message.getMessageId();
-        Set<User> recipients = globalMessageIdToRecipientMap.get(messageId);
+        Set<User> recipients = message.getRecipients();
         if (recipients != null) {
             for (User recipient : recipients) {
                 recipient.removeReceivedMessage(message);

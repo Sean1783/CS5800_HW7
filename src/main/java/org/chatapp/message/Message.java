@@ -8,14 +8,12 @@ import java.util.Set;
 
 public class Message {
     private int messageId;
-//    private Endpoint sender;
-//    private Set<Endpoint> recipients;
     private User sender;
     private Set<User> recipients;
     private String messageContent;
     private LocalDateTime timestamp;
 
-    public Message(int messageId, Endpoint sender, Set<Endpoint> receivers, String messageContent, LocalDateTime timestamp) {
+    public Message(int messageId, User sender, Set<User> receivers, String messageContent, LocalDateTime timestamp) {
         this.messageId = messageId;
         this.sender = sender;
         this.recipients = receivers;
@@ -23,40 +21,16 @@ public class Message {
         this.timestamp = timestamp;
     }
 
-    public static class Endpoint {
-        String name;
-        int id;
-
-        public Endpoint(String name, int id) {
-            this.name = name;
-            this.id = id;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public int getId() {
-            return id;
-        }
-
-        @Override
-        public String toString() {
-            return "{id=" + id + ", name=" + name + "}";
-        }
-    }
-
-    public Endpoint getSender() {
+    public User getSender() {
         return sender;
     }
 
-    public Set<Endpoint> getRecipients() {
+    public Set<User> getRecipients() {
         return recipients;
     }
 
     public MessageMemento save() {
         return new MessageMemento(this);
-
     }
 
     public void restore(MessageMemento memento) {

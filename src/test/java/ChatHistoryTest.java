@@ -43,6 +43,12 @@ public class ChatHistoryTest {
     }
 
     @Test
+    public void testNullMessage() {
+        assertThrows(IllegalStateException.class, () -> chatHistory.getLastRecalledMessage());
+        assertThrows(IllegalStateException.class, () -> chatHistory.getLastSent(userOne));
+    }
+
+    @Test
     public void testGetLastSent() {
         chatHistory.addMessageToHistory(message);
         chatHistory.getLastSent(userOne);

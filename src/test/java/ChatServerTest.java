@@ -32,7 +32,6 @@ public class ChatServerTest {
     @Test
     public void testRegisterUser() {
         server.registerUser(userOne);
-//        assertEquals(server.getRegisteredUsers().get(userOne.getId()), userOne);
         assertEquals(server.getRegisteredUsers().get(0), userOne);
     }
 
@@ -50,6 +49,12 @@ public class ChatServerTest {
         String messageContent = "Test Message";
         server.sendMessage(userOne,Collections.singleton(userTwo),messageContent);
         assertFalse(server.getGlobalMessageRecord().isEmpty());
+    }
+
+    @Test
+    public void testNullMessage() {
+        assertThrows(IllegalArgumentException.class, () -> server.redo(userOne, null));
+        assertThrows(IllegalArgumentException.class, () -> server.revokeMessage(null));
     }
 
     @Test

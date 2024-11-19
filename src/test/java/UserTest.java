@@ -30,11 +30,8 @@ public class UserTest {
 
     @Test
     public void testRegister() {
-        int userId = userOne.getId();
         userOne.register(chatServer);
-//        Map<Integer, User> users = chatServer.getRegisteredUsers();
         List<User> users = chatServer.getRegisteredUsers();
-//        assertTrue(users.containsKey(userId));
         assertTrue(users.contains(userOne));
     }
 
@@ -43,8 +40,6 @@ public class UserTest {
         userOne.register(chatServer);
         userTwo.register(chatServer);
         userOne.unregister(chatServer);
-//        assertFalse(chatServer.getRegisteredUsers().containsKey(userOne.getId()));
-//        assertTrue(chatServer.getRegisteredUsers().containsKey(userTwo.getId()));
         assertFalse(chatServer.getRegisteredUsers().contains(userOne));
         assertTrue(chatServer.getRegisteredUsers().contains(userTwo));
     }

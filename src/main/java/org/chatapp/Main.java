@@ -126,7 +126,7 @@ public class Main {
         // sean --> (x)katie, kitty
         sean.sendMessage(messageContent, recipientList, server);
 
-        System.out.println("Kitty's unaffected chat history with Sean after he undid his last sent message.");
+        System.out.println("Kitty's unaffected chat history with Sean after his last sent message.");
         kittyIterator = kitty.iterator(sean);
         while (kittyIterator.hasNext()) {
             Message message = kittyIterator.next();

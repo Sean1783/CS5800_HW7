@@ -37,7 +37,7 @@ public class SearchMessagesByUserTest {
     }
 
     @Test
-    public void testIteratorWithMatchingUserAsSenderOrRecipient() {
+    public void testIteratorWithMatchingUser() {
         Iterator<Message> iteratorOne = new SearchMessagesByUser(messageHistory, userOne);
         List<Message> results = new ArrayList<>();
         while (iteratorOne.hasNext()) {

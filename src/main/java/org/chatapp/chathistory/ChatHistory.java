@@ -32,7 +32,8 @@ public class ChatHistory implements IterableByUser {
         if (lastRecalledMessage != null) {
             return lastRecalledMessage;
         }
-        return null;
+        System.out.println("Cannot get last recalled Message");
+        throw new IllegalStateException();
     }
 
     public void addMessageToHistory (Message message) {
@@ -59,7 +60,8 @@ public class ChatHistory implements IterableByUser {
                 }
             }
         }
-        return null;
+        System.out.println("Cannot get last recalled Message");
+        throw new IllegalStateException();
     }
 
     public boolean removeMessageFromHistory(Message message) {
